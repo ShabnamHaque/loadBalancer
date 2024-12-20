@@ -51,17 +51,19 @@ func NewLoadBalancer(port string, servers []Server) *LoadBalancer {
 
 func (lb *LoadBalancer) getNextAvailableServer() Server {
 	server := lb.servers[lb.roundRobinCount%len(lb.servers)]
-	for !server.IsAlive() {
+	//which server will it be directed to.
+
+	for !server.IsAlive() {  //if the server is not alive,we move to the next server until we find a one that is alive and return set the server
 		lb.roundRobinCount++
-		server = lb.servers[lb.roundRobinCount%len(lb.servers)]
+		server = lb.servers[lb.roundRobinCount%len(lb.servers)] //move to the next server.
 	}
 	lb.roundRobinCount++
 	return server
 }
 func (lb *LoadBalancer) ServeProxy(rw http.ResponseWriter, req *http.Request) {
-	targetServer := lb.getNextAvailableServer()
+	targetServer := lb.getNextAvailableServer() //find the apporpriate server to direct to.
 	fmt.Printf("Forwarding req to address %q\n", targetServer.Address())
-	targetServer.Serve(rw, req)
+	targetServer.Serve(rw, req) //serve the request to the targetServer
 }
 func (s *SimpleServer) Address() string {
 	return s.addr
